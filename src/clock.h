@@ -1,6 +1,8 @@
 #ifndef CLOCK_H
 #define CLOCK_H
 
+#include <Energia.h>
+
 #define EDITTING_DELAY 1000
 
 class Clock
@@ -14,7 +16,12 @@ private:
   //time editting end
 public:
   //tmp
-  void mockClock(){ counter++; };
+  void mockClock(){
+    counter++;
+
+    Serial.println(counter);
+    delay(20);
+  };
 
   int getTime();
   bool isSunset(){

@@ -4,6 +4,8 @@
 #include <buttons.h>
 #include <actions.h>
 #include <Energia.h>
+#include <Wire.h>
+// #include "RTClib.h"
 
 #define SPA_LON  -8.6166667
 #define SPA_LAT  41.15
@@ -13,27 +15,23 @@
 #define SPA_PRESSURE 1000
 #define SPA_FUNC SPA_ALL
 
-#define BUTTON_LEFT PUSH1
-#define BUTTON_RIGHT PUSH2
+#define BUTTON_LEFT 20
+#define BUTTON_RIGHT 21
 #define BUTTON_UP 12
 #define BUTTON_DOWN 13
+
+// RTC_PCF8523 rtc;
 
 spa_data spa;
 Mirror mirror;
 Clock timer;
-
-// volatile int stepsV;
-// volatile int stepsH;
-// volatile int offsetV;
-// volatile int offsetH;
-// volatile int basicV;
-// volatile int basicH;
 
 void setup();
 void loop();
 void initSPA();
 void onClick();
 void initButtons();
+void initEndOfRangeSensors();
 
 void setup()
 {
@@ -43,27 +41,24 @@ void setup()
     delay(10);
     initSPA();
     initButtons();
+    initEndOfRangeSensors();
+    mirror.init();
     mirror.setMode(Mirror::DAY);
+    delay(10);
+
 }
 
 void loop()
 {
+
   switch(mirror.getMode()){
+    // END_OF_RANGE has longer polling than DAY, but still checks the repositioning in case the user changes the offset
     case Mirror::DAY:
-    // if sunset -> endOfDay()
-    // else if nextMove (optional) -> repostion
-      if( timer.isSunset() ){
-        endOfDay(mirror, timer);
-      } else {
-        reposition(mirror, timer);
-      }
-      break;
     case Mirror::END_OF_RANGE:
-    // if sunset -> endOfDay()
       if( timer.isSunset() ){
         endOfDay(mirror, timer);
       } else {
-        reposition(mirror, timer);
+        reposition(mirror, timer, &spa);
       }
       break;
     case Mirror::MOVING:
@@ -77,22 +72,13 @@ void loop()
       break;
     case Mirror::EDIT:
       if( timer.isEdittingEnd() ){
-        reposition(mirror, timer);
+        reposition(mirror, timer, &spa);
       }
       break;
   }
 
-  // Serial.println(Clock::getTime());
-  // spa_calculate(&spa);
-  // Serial.println(spa.incidence);
-  // Serial.println(spa.azimuth);
-  // Serial.println(spa.sunrise);
-  // Serial.println(spa.sunset);
-  // delay(20);
-
   sleep(mirror.getDelay());
-
-  //tmp
+  // temporary
   timer.mockClock();
 }
 
@@ -116,33 +102,50 @@ void initSPA(){
 }
 
 // Editting works only during the day
-void moveLeft() {
+void setLeft() {
   if( mirror.getMode() != Mirror::MOVING && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     timer.updateEdittingEnd();
-    mirror.moveLeft();
+    mirror.setLeft();
   }
 }
-void moveRight() {
+void setRight() {
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     timer.updateEdittingEnd();
-    mirror.moveRight();
+    mirror.setRight();
   }
 }
-void moveUp() {
+void setUp() {
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     timer.updateEdittingEnd();
-    mirror.moveUp();
+    mirror.setUp();
   }
 }
-void moveDown() {
+void setDown() {
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     timer.updateEdittingEnd();
-    mirror.moveDown();
+    mirror.setDown();
   }
+}
+
+//Interrupts for end of range, has to reset the count,
+void endOfRangeLeft(){
+  mirror.touchLeft();
+}
+
+void endOfRangeRight(){
+  mirror.touchRight();
+}
+
+void endOfRangeTop(){
+  mirror.touchTop();
+}
+
+void endOfRangeBottom(){
+  mirror.touchBottom();
 }
 
 void initButtons(){
@@ -150,8 +153,26 @@ void initButtons(){
   pinMode(BUTTON_RIGHT, INPUT_PULLUP);
   pinMode(BUTTON_DOWN, INPUT_PULLUP);
   pinMode(BUTTON_UP, INPUT_PULLUP);
-  attachInterrupt(BUTTON_LEFT, moveLeft , FALLING);
-  attachInterrupt(BUTTON_RIGHT, moveRight , FALLING);
-  attachInterrupt(BUTTON_DOWN, moveDown , FALLING);
-  attachInterrupt(BUTTON_UP, moveUp , FALLING);
+  attachInterrupt(BUTTON_LEFT, setLeft , FALLING);
+  attachInterrupt(BUTTON_RIGHT, setRight , FALLING);
+  attachInterrupt(BUTTON_DOWN, setDown , FALLING);
+  attachInterrupt(BUTTON_UP, setUp , FALLING);
+}
+
+void initEndOfRangeSensors(){
+  // pinMode(LEFT_END_PIN, INPUT);
+  // pinMode(RIGHT_END_PIN, INPUT);
+  // pinMode(BOTTOM_END_PIN, INPUT);
+  // pinMode(TOP_END_PIN, INPUT);
+
+// for testing with internal pullups
+  pinMode(LEFT_END_PIN, INPUT_PULLUP);
+  pinMode(RIGHT_END_PIN, INPUT_PULLUP);
+  pinMode(BOTTOM_END_PIN, INPUT_PULLUP);
+  pinMode(TOP_END_PIN, INPUT_PULLUP);
+
+  attachInterrupt(LEFT_END_PIN, endOfRangeLeft , FALLING);
+  attachInterrupt(RIGHT_END_PIN, endOfRangeRight , FALLING);
+  attachInterrupt(BOTTOM_END_PIN, endOfRangeBottom , FALLING);
+  attachInterrupt(TOP_END_PIN, endOfRangeTop , FALLING);
 }
