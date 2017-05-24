@@ -1,8 +1,7 @@
 #include <spa.h>
-#include <mirror.h>
-#include <clock.h>
-#include <buttons.h>
-#include <actions.h>
+#include <mirror/mirror.h>
+#include <clock/clock.h>
+#include <actions/actions.h>
 #include <Energia.h>
 #include <Wire.h>
 // #include "RTClib.h"
@@ -20,8 +19,6 @@
 #define BUTTON_UP 12
 #define BUTTON_DOWN 13
 
-// RTC_PCF8523 rtc;
-
 spa_data spa;
 Mirror mirror;
 Clock timer;
@@ -35,8 +32,6 @@ void initEndOfRangeSensors();
 
 void setup()
 {
-  // pinMode(GREEN_LED, OUTPUT);     // set pin as output
-
     Serial.begin(9600);
     delay(10);
     initSPA();
@@ -45,7 +40,6 @@ void setup()
     mirror.init();
     mirror.setMode(Mirror::DAY);
     delay(10);
-
 }
 
 void loop()
@@ -61,11 +55,7 @@ void loop()
         reposition(mirror, timer, &spa);
       }
       break;
-    case Mirror::MOVING:
-    // nothing ?
-      break;
     case Mirror::NIGHT:
-      // if sunrise in 5 min beginningOfDay
       if( timer.isSunrise() ){
         beginningOfDay(mirror);
       }

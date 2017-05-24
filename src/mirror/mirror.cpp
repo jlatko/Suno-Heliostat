@@ -1,37 +1,6 @@
 #include "mirror.h"
+#include "memory/memory.h"
 #include <Energia.h>
-
-
-
-#define SETTUP_STEP_H 1
-#define SETTUP_STEP_V 1
-
-// how long is the delay in main loop
-#define POLLING_DAY 1000
-#define POLLING_END_OF_RANGE 1001
-#define POLLING_MOVING 1002
-#define POLLING_NIGHT 1003
-#define POLLING_EDIT 100
-
-// how long the coil is supplied with voltage and how long is the delay after the move
-#define MOTOR_SIGNAL_HIGH_TIME 50
-#define MOTOR_SIGNAL_GAP_TIME 200
-
-#define ENABLE_1_H_PIN 5
-#define ENABLE_2_H_PIN 25
-#define COIL_11_A_H_PIN 10
-#define COIL_11_B_H_PIN 30
-#define COIL_12_A_H_PIN 8
-#define COIL_12_B_H_PIN 29
-
-#define ENABLE_1_V_PIN 26
-#define ENABLE_2_V_PIN 26
-#define COIL_11_A_V_PIN 26
-#define COIL_11_B_V_PIN 26
-#define COIL_12_A_V_PIN 26
-#define COIL_12_B_V_PIN 26
-
-
 
 const unsigned int Mirror::delayTimes[]= {
   POLLING_DAY,
@@ -55,28 +24,72 @@ const unsigned int Mirror::stepNumberToPinV[]= {
 
 // INIT: sets the motor control pins to output
 void Mirror::init(){
-  pinMode(ENABLE_1_H_PIN, OUTPUT);
-  pinMode(ENABLE_2_H_PIN, OUTPUT);
+  // pinMode(ENABLE_H_PIN, OUTPUT);
   pinMode(COIL_11_A_H_PIN, OUTPUT);
   pinMode(COIL_11_B_H_PIN, OUTPUT);
   pinMode(COIL_12_A_H_PIN, OUTPUT);
   pinMode(COIL_12_B_H_PIN, OUTPUT);
 
-  pinMode(ENABLE_1_V_PIN, OUTPUT);
-  pinMode(ENABLE_2_V_PIN, OUTPUT);
+  // pinMode(ENABLE_V_PIN, OUTPUT);
   pinMode(COIL_11_A_V_PIN, OUTPUT);
   pinMode(COIL_11_B_V_PIN, OUTPUT);
   pinMode(COIL_12_A_V_PIN, OUTPUT);
   pinMode(COIL_12_B_V_PIN, OUTPUT);
 
+// If not end of range set steps from memory
+  if(digitalRead(LEFT_END_PIN) == LOW){
+    stepsH = -END_OF_RANGE_H;
+    saveStepsH();
+  } else if(digitalRead(RIGHT_END_PIN) == LOW){
+    stepsH = END_OF_RANGE_H;
+    saveStepsH();
+  }else{
+    stepsH = (int)read(STEPS_H_ADDRESS);
+  }
 
-
+  if(digitalRead(BOTTOM_END_PIN) == LOW){
+    stepsV = -END_OF_RANGE_V;
+    saveStepsV();
+  } else if(digitalRead(TOP_END_PIN) == LOW){
+    stepsV = END_OF_RANGE_V;
+    saveStepsV();
+  }else{
+    stepsV = (int)read(STEPS_V_ADDRESS);
+  }
+  offsetH = (int)read(OFFSET_H_ADDRESS);
+  offsetV = (int)read(OFFSET_V_ADDRESS);
 }
- void Mirror::calculateBasic(spa_data *spa){
 
- }
+// Memory management - saving steps and settings to the memory
+void Mirror::saveOffsets(){
+  write(OFFSET_H_ADDRESS, offsetH);
+  write(OFFSET_V_ADDRESS, offsetV);
+}
 
-// Setup: changes the offset after a single click
+void Mirror::saveStepsH(){
+  write(STEPS_H_ADDRESS, stepsH);
+}
+
+void Mirror::saveStepsV(){
+  write(STEPS_V_ADDRESS, stepsV);
+}
+
+void Mirror::reset(){
+  write(STEPS_V_ADDRESS, 0);
+  write(STEPS_H_ADDRESS, 0);
+  write(OFFSET_H_ADDRESS, 0);
+  write(OFFSET_V_ADDRESS, 0);
+  stepsH = 0;
+  stepsV = 0;
+  offsetH = 0;
+  offsetV = 0;
+}
+
+void Mirror::calculateBasic(spa_data *spa){
+  //TODO: here
+}
+
+// === Setup: changes the offset after a single click  ===
 // TODO: make sure what should be the max and min offset
 void Mirror::setLeft(){
   // additional variable just for being super-cautious not to let the offset go out of range
@@ -119,7 +132,7 @@ void Mirror::setDown(){
   }
 }
 
-// end of range interrupts
+// --- end of range interrupts ---
 void Mirror::touchLeft(){
   stepsH = -END_OF_RANGE_H;
   touchedLeft = true;
@@ -169,51 +182,91 @@ void Mirror::makeStepV(){
 
 // crucial piece of code - loop for moving the motors
 
-bool Mirror::repositionH(){
-
-// enable the motor driver
-  digitalWrite(ENABLE_1_H_PIN, HIGH);
-  digitalWrite(ENABLE_2_H_PIN, HIGH);
-
+void Mirror::repositionH(){
   while( true ){
-    Serial.print("stepsH: ");
-    Serial.println(stepsH);
-    Serial.print("desiredH: ");
-    Serial.println(desiredH);
-    delay(20);
     // TODO: delete ( || true)
     if(stepsH < desiredH && (digitalRead(RIGHT_END_PIN) == HIGH )){
       stepsH++;
       makeStepH();
+      saveStepsH();
     }else if( stepsH > desiredH && ( digitalRead(LEFT_END_PIN) == HIGH )){
       stepsH--;
       makeStepH();
+      saveStepsH();
     }else{
       // moves until it reaches the desired angle or the end of range
       break;
     }
   }
-  digitalWrite(ENABLE_1_H_PIN, LOW);
-  digitalWrite(ENABLE_2_H_PIN, LOW);
-  return true;
 }
 
-bool Mirror::repositionV(){
-  digitalWrite(ENABLE_1_V_PIN, HIGH);
-  digitalWrite(ENABLE_2_V_PIN, HIGH);
+void Mirror::repositionV(){
   while( true ){
     // ( || true) - temporary, only to check without the button
     if(stepsV < desiredV && (digitalRead(TOP_END_PIN) == HIGH || true )){
       stepsV++;
       makeStepV();
+      saveStepsV();
     }else if( stepsV > desiredV && (digitalRead(BOTTOM_END_PIN) == HIGH || true )){
       stepsV--;
       makeStepV();
+      saveStepsV();
     }else{
       break;
     }
   }
-  digitalWrite(ENABLE_1_V_PIN, LOW);
-  digitalWrite(ENABLE_2_V_PIN, LOW);
-  return true;
+}
+
+//
+// repositioning
+//
+void Mirror::reposition(){
+  setMode(Mirror::MOVING);
+  Serial.println("Moving...");
+  delay(20);
+  
+  desiredH = basicH + offsetH;
+  if( desiredH > END_OF_RANGE_H){
+    desiredH = END_OF_RANGE_H;
+  }else if( desiredH < -END_OF_RANGE_H ){
+    desiredH = -END_OF_RANGE_H;
+  }
+
+  desiredV = basicV + offsetV;
+  if( desiredH > END_OF_RANGE_H){
+    desiredH = END_OF_RANGE_H;
+  }else if( desiredH < -END_OF_RANGE_H ){
+    desiredH = -END_OF_RANGE_H;
+  }
+  repositionH();
+  repositionV();
+  if( desiredH == END_OF_RANGE_H || desiredV == END_OF_RANGE_V ){
+    setMode(Mirror::END_OF_RANGE);
+  } else {
+    setMode(Mirror::DAY);
+  }
+}
+
+void Mirror::repositionToReset(){
+  setMode(Mirror::MOVING);
+  Serial.println("To reset...");
+  delay(20);
+  stepsH = END_OF_RANGE_H;
+  stepsV = END_OF_RANGE_V;
+  desiredH = - END_OF_RANGE_H;
+  desiredV = - END_OF_RANGE_V;
+  repositionH();
+  repositionV();
+  setMode(Mirror::DAY);
+}
+
+void Mirror::toBeginning(){
+  setMode(Mirror::MOVING);
+  Serial.println("To begining...");
+  delay(20);
+  desiredH = BEGINING_H;
+  desiredV = BEGINING_V;
+  repositionH();
+  repositionV();
+  setMode(Mirror::NIGHT);
 }
