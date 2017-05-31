@@ -2,8 +2,15 @@
 #define CLOCK_H
 
 #include <Energia.h>
+#include <ctime>
+#include "spa.h"
+#include "print.h"
+#include "math.h"
 
-#define EDITTING_DELAY 1000
+// in seconds
+#define EDITTING_DELAY 2
+
+int minuteOfDay(const tm dt);
 
 class Clock
 {
@@ -11,35 +18,23 @@ private:
   // temporary timer mock
   volatile unsigned int counter = 0;
 
-  //time sunset
-  //time sunrise
-  //time editting end
+  tm sunset;
+  tm sunrise;
+  time_t edittingEnd;
 public:
   //tmp
   void mockClock(){
     counter++;
-
-    Serial.println(counter);
-    delay(20);
+    PRINT(counter);
   };
 
-  int getTime();
-  bool isSunset(){
-    return counter > 10;
-  };
-  bool isSunrise(){
-    if( counter > 20){
-      counter = 0;
-      return true;
-    }
-    return false;
-  };
-  bool isEdittingEnd(){
-    return counter > 6;
-  };
-  void updateEdittingEnd(){};
-  void calculateSunsetSunrise(){};
+  time_t getTime();
+  tm getTm();
 
+  bool isSunset();
+  bool isSunrise();
+  bool isEdittingEnd();
+  void updateEdittingEnd();
+  void calculateSunsetSunrise(spa_data *spa);
 };
-
 #endif

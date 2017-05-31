@@ -3,8 +3,9 @@
 #include <clock/clock.h>
 #include <actions/actions.h>
 #include <Energia.h>
-#include <Wire.h>
-// #include "RTClib.h"
+#include <leds/leds.h>
+#include <print.h>
+// #define PRINT(x) Serial.println(x); delay(20)
 
 #define SPA_LON  -8.6166667
 #define SPA_LAT  41.15
@@ -14,14 +15,16 @@
 #define SPA_PRESSURE 1000
 #define SPA_FUNC SPA_ALL
 
-#define BUTTON_LEFT 20
-#define BUTTON_RIGHT 21
-#define BUTTON_UP 12
-#define BUTTON_DOWN 13
+#define BUTTON_UP 11
+#define BUTTON_DOWN 31
+#define BUTTON_LEFT 12
+#define BUTTON_RIGHT 32
+
+using namespace std;
 
 spa_data spa;
 Mirror mirror;
-Clock timer;
+Clock clk;
 
 void setup();
 void loop();
@@ -32,44 +35,50 @@ void initEndOfRangeSensors();
 
 void setup()
 {
-    Serial.begin(9600);
+    INIT_SERIAL();
     delay(10);
     initSPA();
     initButtons();
     initEndOfRangeSensors();
     mirror.init();
+    recalculateSpa(clk, &spa);
+    clk.calculateSunsetSunrise(&spa);
     mirror.setMode(Mirror::DAY);
+    initLeds();
+    testLeds();
     delay(10);
+    PRINT("Hello");
+    delay(20);
 }
 
 void loop()
 {
-
+  PRINT("loop");
   switch(mirror.getMode()){
     // END_OF_RANGE has longer polling than DAY, but still checks the repositioning in case the user changes the offset
     case Mirror::DAY:
     case Mirror::END_OF_RANGE:
-      if( timer.isSunset() ){
-        endOfDay(mirror, timer);
+      if( clk.isSunset() ){
+        endOfDay(mirror, clk, &spa);
       } else {
-        reposition(mirror, timer, &spa);
+        reposition(mirror, clk, &spa);
       }
       break;
     case Mirror::NIGHT:
-      if( timer.isSunrise() ){
+      if( clk.isSunrise() ){
         beginningOfDay(mirror);
       }
       break;
     case Mirror::EDIT:
-      if( timer.isEdittingEnd() ){
-        reposition(mirror, timer, &spa);
+      if( clk.isEdittingEnd() ){
+        reposition(mirror, clk, &spa);
       }
       break;
   }
 
   sleep(mirror.getDelay());
   // temporary
-  timer.mockClock();
+  clk.mockClock();
 }
 
 void initSPA(){
@@ -95,28 +104,28 @@ void initSPA(){
 void setLeft() {
   if( mirror.getMode() != Mirror::MOVING && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
-    timer.updateEdittingEnd();
+    clk.updateEdittingEnd();
     mirror.setLeft();
   }
 }
 void setRight() {
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
-    timer.updateEdittingEnd();
+    clk.updateEdittingEnd();
     mirror.setRight();
   }
 }
 void setUp() {
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
-    timer.updateEdittingEnd();
+    clk.updateEdittingEnd();
     mirror.setUp();
   }
 }
 void setDown() {
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
-    timer.updateEdittingEnd();
+    clk.updateEdittingEnd();
     mirror.setDown();
   }
 }
