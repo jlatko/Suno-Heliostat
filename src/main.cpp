@@ -32,23 +32,26 @@ void initSPA();
 void onClick();
 void initButtons();
 void initEndOfRangeSensors();
+void reset();
 
 void setup()
 {
     INIT_SERIAL();
-    delay(10);
     initSPA();
     initButtons();
     initEndOfRangeSensors();
+    initLeds();
+    testLeds();
+
     mirror.init();
+
+    pinMode(PUSH2, INPUT_PULLUP);
+    attachInterrupt(PUSH2, reset, FALLING);
+
     recalculateSpa(clk, &spa);
     clk.calculateSunsetSunrise(&spa);
     mirror.setMode(Mirror::DAY);
-    initLeds();
-    testLeds();
-    delay(10);
     PRINT("Hello");
-    delay(20);
 }
 
 void loop()
@@ -71,6 +74,8 @@ void loop()
       break;
     case Mirror::EDIT:
       if( clk.isEdittingEnd() ){
+        mirror.saveOffsets();
+        PRINT("editting end");
         reposition(mirror, clk, &spa);
       }
       break;
@@ -102,49 +107,61 @@ void initSPA(){
 
 // Editting works only during the day
 void setLeft() {
+  PRINT("left");
   if( mirror.getMode() != Mirror::MOVING && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     clk.updateEdittingEnd();
     mirror.setLeft();
   }
+  blink(GREEN);
 }
 void setRight() {
+  PRINT("right");
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     clk.updateEdittingEnd();
     mirror.setRight();
   }
+  blink(GREEN);
 }
 void setUp() {
+  PRINT("Up");
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     clk.updateEdittingEnd();
     mirror.setUp();
   }
+  blink(GREEN);
 }
 void setDown() {
+  PRINT("Down");
   if( mirror.getMode() != Mirror::MOVING  && mirror.getMode() != Mirror::NIGHT ){
     mirror.setMode(Mirror::EDIT);
     clk.updateEdittingEnd();
     mirror.setDown();
   }
+  blink(GREEN);
 }
 
 //Interrupts for end of range, has to reset the count,
 void endOfRangeLeft(){
   mirror.touchLeft();
+  blink(RED);
 }
 
 void endOfRangeRight(){
   mirror.touchRight();
+  blink(RED);
 }
 
 void endOfRangeTop(){
   mirror.touchTop();
+  blink(RED);
 }
 
 void endOfRangeBottom(){
   mirror.touchBottom();
+  blink(RED);
 }
 
 void initButtons(){
@@ -174,4 +191,10 @@ void initEndOfRangeSensors(){
   attachInterrupt(RIGHT_END_PIN, endOfRangeRight , FALLING);
   attachInterrupt(BOTTOM_END_PIN, endOfRangeBottom , FALLING);
   attachInterrupt(TOP_END_PIN, endOfRangeTop , FALLING);
+}
+
+void reset(){
+  PRINT("reset");
+  blink(WHITE);
+  mirror.reset();
 }

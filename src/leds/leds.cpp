@@ -2,57 +2,35 @@
 #include <Energia.h>
 #include "inc/tm4c123gh6pm.h"
 
-#define RED ( 1 << 1)
-#define BLUE ( 1 << 2)
-#define GREEN ( 1 << 3)
-
 void initLeds(){
-  SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF;
-  GPIO_PORTF_DIR_R = RED|GREEN|BLUE;
-  GPIO_PORTF_DEN_R = RED|GREEN|BLUE;
-  GPIO_PORTF_DATA_R = 0x00000000;
+
+  // SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF;
+  GPIO_PORTF_DIR_R |= RED|GREEN|BLUE;
+  GPIO_PORTF_DEN_R |= RED|GREEN|BLUE;
+  GPIO_PORTF_DATA_R &= ~(RED|GREEN|BLUE);
 }
 
 void ledsOff(){
-  GPIO_PORTF_DATA_R = 0x00000000;
+  GPIO_PORTF_DATA_R &= ~(RED|GREEN|BLUE);
 }
 
-void red(){
-  GPIO_PORTF_DATA_R = RED;
+void blink(int color){
+  GPIO_PORTF_DATA_R |= color;
+  delay(20);
+  ledsOff();
 }
-void blue(){
-  GPIO_PORTF_DATA_R = BLUE;
-}
-void green(){
-  GPIO_PORTF_DATA_R = GREEN;
-}
-void yellow(){
-  GPIO_PORTF_DATA_R = GREEN|RED;
-}
-void pink(){
-  GPIO_PORTF_DATA_R = RED|BLUE;
-}
-void cyan(){
-  GPIO_PORTF_DATA_R = GREEN|BLUE;
-}
-void white(){
-  GPIO_PORTF_DATA_R = GREEN|RED|BLUE;
+void setColor(int color){
+  GPIO_PORTF_DATA_R |= color;
 }
 
 void testLeds(){
-  red();
+  blink(RED);
   delay(100);
-  green();
+  blink(BLUE);
   delay(100);
-  blue();
+  blink(GREEN);
   delay(100);
-  yellow();
-  delay(100);
-  pink();
-  delay(100);
-  cyan();
-  delay(100);
-  white();
+  setColor(WHITE);
   delay(100);
   ledsOff();
 }

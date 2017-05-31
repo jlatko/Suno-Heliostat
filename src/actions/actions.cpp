@@ -6,7 +6,6 @@ void reposition(Mirror& mirror, Clock& clk, spa_data * spa){
   recalculateSpa(clk, spa);
   mirror.calculateBasic(spa);
   mirror.reposition();
-  delay(20);
 }
 
 void endOfDay(Mirror& mirror, Clock& clk, spa_data * spa){
@@ -21,7 +20,6 @@ void endOfDay(Mirror& mirror, Clock& clk, spa_data * spa){
 void beginningOfDay(Mirror& mirror){
   PRINT("Begenning of day");
   mirror.repositionToReset();
-  delay(20);
 }
 
 void recalculateSpa(Clock &clock, spa_data * spa){

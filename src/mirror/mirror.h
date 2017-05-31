@@ -5,18 +5,18 @@
 #define MIRROR_H
 
 // #define STEPS_PER_DEGREE_V 10
-#define STEPS_PER_DEGREE_H 10
+#define STEPS_PER_DEGREE_H 2
 
-#define END_OF_RANGE_TOP 8
-#define END_OF_RANGE_BOTTOM -8
-#define END_OF_RANGE_H 20
+#define END_OF_RANGE_TOP 3
+#define END_OF_RANGE_BOTTOM -3
+#define END_OF_RANGE_H 5
 
-#define END_OF_RANGE_TOP_ANGLE 30
-#define END_OF_RANGE_BOTTOM_ANGLE -30
-#define END_OF_RANGE_H_ANGLE 60
+#define END_OF_RANGE_TOP_ANGLE 6
+#define END_OF_RANGE_BOTTOM_ANGLE -6
+#define END_OF_RANGE_H_ANGLE 50
 
-#define BEGINING_H (-END_OF_RANGE_H + 5)
-#define BEGINING_V (END_OF_RANGE_BOTTOM + 5)
+#define BEGINING_H (-END_OF_RANGE_H + 1)
+#define BEGINING_V (END_OF_RANGE_BOTTOM + 1)
 
 // end of range sensor pins
 #define LEFT_END_PIN 9

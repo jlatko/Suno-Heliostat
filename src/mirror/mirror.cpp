@@ -1,4 +1,5 @@
 #include "mirror.h"
+#include "leds/leds.h"
 #include "memory/memory.h"
 #include <Energia.h>
 
@@ -56,14 +57,25 @@ void Mirror::init(){
   }else{
     stepsV = (int)read(STEPS_V_ADDRESS);
   }
-  offsetAngleH = (float)read(OFFSET_H_ADDRESS);
-  offsetAngleV = (float)read(OFFSET_V_ADDRESS);
+  uint32_t offsetBytesH,offsetBytesV;
+  offsetBytesH = read(OFFSET_H_ADDRESS);
+  offsetBytesV = read(OFFSET_V_ADDRESS);
+  memcpy((char*)&offsetAngleH, (char*)&offsetBytesH, 4);
+  memcpy((char*)&offsetAngleV, (char*)&offsetBytesV, 4);
+  PRINT("Init mirror");
+  PRINT2("Offset H: ",offsetAngleH);
+  PRINT2("Offset V: ",offsetAngleV);
+  PRINT2("Steps H: ",stepsH);
+  PRINT2("Steps V: ",stepsV);
 }
 
 // Memory management - saving steps and settings to the memory
 void Mirror::saveOffsets(){
-  write(OFFSET_H_ADDRESS, offsetAngleH);
-  write(OFFSET_V_ADDRESS, offsetAngleV);
+  uint32_t offsetBytesH,offsetBytesV;
+  memcpy((char*)&offsetBytesH, (char*)&offsetAngleH, 4);
+  memcpy((char*)&offsetBytesV, (char*)&offsetAngleV, 4);
+  write(OFFSET_H_ADDRESS, offsetBytesH);
+  write(OFFSET_V_ADDRESS, offsetBytesV);
 }
 
 void Mirror::saveStepsH(){
@@ -96,7 +108,9 @@ int Mirror::angleToStepsV(float angle){
 
 void Mirror::calculateBasic(spa_data *spa){
   basicAngleH = spa->azimuth_astro/2;
-  basicAngleH = spa->elevation/2;
+  basicAngleV = spa->elevation/2;
+  PRINT2("Basic H: ",basicAngleH);
+  PRINT2("Basic V: ",basicAngleV);
 }
 
 // === Setup: changes the offset after a single click  ===
@@ -106,9 +120,8 @@ void Mirror::setLeft(){
   float tmpOffset = offsetAngleH - SETTUP_STEP_H;
   if( tmpOffset >= -END_OF_RANGE_H_ANGLE ){
     offsetAngleH = tmpOffset;
-    Serial.print("LEFT: Offset H: " );
+    PRINT("LEFT: Offset H: " );
     PRINT(offsetAngleH);
-    delay(20);
   }
 }
 
@@ -116,59 +129,48 @@ void Mirror::setRight(){
   float tmpOffset = offsetAngleH + SETTUP_STEP_H;
   if( tmpOffset <= END_OF_RANGE_H_ANGLE ){
     offsetAngleH = tmpOffset;
-    Serial.print("Right: Offset H: " );
+    PRINT("Right: Offset H: " );
     PRINT(offsetAngleH);
-    delay(20);
   }
 }
 
 void Mirror::setUp(){
-  int tmpOffset = offsetAngleV + SETTUP_STEP_V;
+  float tmpOffset = offsetAngleV + SETTUP_STEP_V;
   if( tmpOffset <= END_OF_RANGE_TOP_ANGLE ){
     offsetAngleV = tmpOffset;
-    Serial.print("UP: Offset V: " );
+    PRINT("UP: Offset V: " );
     PRINT(offsetAngleV);
-    delay(20);
   }
 }
 
 void Mirror::setDown(){
-  int tmpOffset = offsetAngleV - SETTUP_STEP_V;
+  float tmpOffset = offsetAngleV - SETTUP_STEP_V;
   if( tmpOffset >= END_OF_RANGE_BOTTOM_ANGLE ){
     offsetAngleV = tmpOffset;
-    Serial.print("DOWN: Offset V: " );
+    PRINT("DOWN: Offset V: " );
     PRINT(offsetAngleV);
-    delay(20);
   }
 }
 
 // --- end of range interrupts ---
 void Mirror::touchLeft(){
   stepsH = -END_OF_RANGE_H;
-  // touchedLeft = true;
   PRINT("Touched left");
-  delay(20);
 }
 
 void Mirror::touchRight(){
   stepsH = END_OF_RANGE_H;
-  // touchedRight = true;
   PRINT("Touched right");
-  delay(20);
 }
 
 void Mirror::touchTop(){
   stepsV = END_OF_RANGE_TOP;
-  // touchedTop = true;
   PRINT("Touched top");
-  delay(20);
 }
 
 void Mirror::touchBottom(){
   stepsV = END_OF_RANGE_BOTTOM;
-  // touchedBottom = true;
   PRINT("Touched bottom");
-  delay(20);
 }
 
 // MOVING
@@ -180,6 +182,7 @@ void Mirror::makeStepH(){
   delay(MOTOR_SIGNAL_HIGH_TIME);
   digitalWrite(stepNumberToPinH[step], LOW);
   delay(MOTOR_SIGNAL_GAP_TIME);
+  blink(YELLOW);
 }
 
 void Mirror::makeStepV(){
@@ -188,6 +191,7 @@ void Mirror::makeStepV(){
   delay(MOTOR_SIGNAL_HIGH_TIME);
   digitalWrite(stepNumberToPinV[step], LOW);
   delay(MOTOR_SIGNAL_GAP_TIME);
+  blink(PINK);
 }
 
 // crucial piece of code - loop for moving the motors
@@ -233,7 +237,6 @@ void Mirror::repositionV(){
 void Mirror::reposition(){
   setMode(Mirror::MOVING);
   PRINT("Moving...");
-  delay(20);
 
   desiredH = angleToStepsH(basicAngleH + offsetAngleH);
   if( desiredH > END_OF_RANGE_H){
@@ -248,6 +251,9 @@ void Mirror::reposition(){
   }else if( desiredH < -END_OF_RANGE_H ){
     desiredH = -END_OF_RANGE_H;
   }
+  PRINT(desiredH);
+  PRINT(desiredV);
+
   repositionH();
   repositionV();
   if( desiredH == END_OF_RANGE_H || desiredV == END_OF_RANGE_BOTTOM  ){
@@ -260,7 +266,6 @@ void Mirror::reposition(){
 void Mirror::repositionToReset(){
   setMode(Mirror::MOVING);
   PRINT("To reset...");
-  delay(20);
   stepsH = END_OF_RANGE_H;
   stepsV = END_OF_RANGE_TOP;
   desiredH = - END_OF_RANGE_H;
@@ -273,7 +278,6 @@ void Mirror::repositionToReset(){
 void Mirror::toBeginning(){
   setMode(Mirror::MOVING);
   PRINT("To begining...");
-  delay(20);
   desiredH = BEGINING_H;
   desiredV = BEGINING_V;
   repositionH();

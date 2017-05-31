@@ -22,6 +22,7 @@ private:
   tm sunrise;
   time_t edittingEnd;
 public:
+  void init();
   //tmp
   void mockClock(){
     counter++;
