@@ -17,8 +17,8 @@
 
 #define BUTTON_UP 11
 #define BUTTON_DOWN 31
-#define BUTTON_LEFT 12
-#define BUTTON_RIGHT 32
+#define BUTTON_LEFT 32
+#define BUTTON_RIGHT 12
 
 using namespace std;
 
@@ -56,7 +56,6 @@ void setup()
 
 void loop()
 {
-  PRINT("loop");
   switch(mirror.getMode()){
     // END_OF_RANGE has longer polling than DAY, but still checks the repositioning in case the user changes the offset
     case Mirror::DAY:
@@ -82,6 +81,7 @@ void loop()
   }
 
   sleep(mirror.getDelay());
+  PRINT("loop delay...");
 }
 
 void initSPA(){

@@ -246,13 +246,18 @@ void Mirror::reposition(){
   }
 
   desiredV = angleToStepsV(basicAngleV + offsetAngleV);
-  if( desiredH > END_OF_RANGE_H){
-    desiredH = END_OF_RANGE_H;
-  }else if( desiredH < -END_OF_RANGE_H ){
-    desiredH = -END_OF_RANGE_H;
+  if( desiredV > END_OF_RANGE_TOP){
+    desiredV = END_OF_RANGE_TOP;
+  }else if( desiredV < END_OF_RANGE_BOTTOM ){
+    desiredV = END_OF_RANGE_BOTTOM;
   }
-  PRINT(desiredH);
-  PRINT(desiredV);
+
+  PRINT2("stepsH: ", stepsH);
+  PRINT2("stepsV: ", stepsV);
+  PRINT2("desired angle H: ", basicAngleH + offsetAngleH);
+  PRINT2("desired angle V: ", basicAngleV + offsetAngleV);
+  PRINT2("desiredH: ", desiredH);
+  PRINT2("desiredV: ", desiredV);
 
   repositionH();
   repositionV();
