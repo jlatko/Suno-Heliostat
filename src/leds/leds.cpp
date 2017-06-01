@@ -1,9 +1,10 @@
 #include "leds.h"
+#include "print.h"
 #include <Energia.h>
 #include "inc/tm4c123gh6pm.h"
 
 void initLeds(){
-
+  PRINT("Init leds");
   // SYSCTL_RCGC2_R |= SYSCTL_RCGC2_GPIOF;
   GPIO_PORTF_DIR_R |= RED|GREEN|BLUE;
   GPIO_PORTF_DEN_R |= RED|GREEN|BLUE;

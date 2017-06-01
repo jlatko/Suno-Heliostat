@@ -23,11 +23,23 @@ void beginningOfDay(Mirror& mirror){
 }
 
 void recalculateSpa(Clock &clock, spa_data * spa){
+  PRINT("Recalculate SPA");
   tm dt = clock.getTm();
-  spa->year = dt.tm_year;
-  spa->month = dt.tm_mon;
+  spa->year = dt.tm_year + 1900;
+  spa->month = dt.tm_mon + 1;
   spa->day = dt.tm_mday;
   spa->hour = dt.tm_hour;
   spa->minute = dt.tm_min;
   spa->second = dt.tm_sec;
+  spa_calculate(spa);
+  PRINT2("year: ", spa->year);
+  PRINT2("month: ", spa->month);
+  PRINT2("day: ", spa->day);
+  PRINT2("hour: ", spa->hour);
+  PRINT2("minute: ", spa->minute);
+  PRINT2("second: ", spa->second);
+  PRINT2("azimuth: ", spa->azimuth_astro);
+  PRINT2("incidence: ", spa->incidence);
+  PRINT2("sunrise: ", spa->sunrise);
+  PRINT2("sunset: ", spa->sunset);
 }

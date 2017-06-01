@@ -108,7 +108,7 @@ int Mirror::angleToStepsV(float angle){
 
 void Mirror::calculateBasic(spa_data *spa){
   basicAngleH = spa->azimuth_astro/2;
-  basicAngleV = spa->elevation/2;
+  basicAngleV = spa->incidence/2;
   PRINT2("Basic H: ",basicAngleH);
   PRINT2("Basic V: ",basicAngleV);
 }

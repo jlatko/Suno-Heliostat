@@ -42,7 +42,7 @@ void setup()
     initEndOfRangeSensors();
     initLeds();
     testLeds();
-
+    clk.init();
     mirror.init();
 
     pinMode(PUSH2, INPUT_PULLUP);
@@ -82,8 +82,6 @@ void loop()
   }
 
   sleep(mirror.getDelay());
-  // temporary
-  clk.mockClock();
 }
 
 void initSPA(){
@@ -94,15 +92,6 @@ void initSPA(){
   spa.pressure      = SPA_PRESSURE;
   spa.temperature   = SPA_TEMPERATURE;
   spa.function      = SPA_FUNC;
-
-// ------
-  spa.year = 2017;
-  spa.month = 5;
-  spa.day = 11;
-  spa.hour = 12;
-  spa.minute = 0;
-  spa.second = 0;
-
 }
 
 // Editting works only during the day

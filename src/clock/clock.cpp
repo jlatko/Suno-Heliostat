@@ -1,4 +1,5 @@
 #include "clock.h"
+#include "print.h"
 #include "i2c/i2c.h"
 
 #define RTC_ADDRESS 0x68
@@ -18,6 +19,7 @@ int minuteOfDay(const tm dt){
 }
 
 void Clock::init(){
+  PRINT("Init clock");
   initI2C0();
 }
 
@@ -32,20 +34,31 @@ tm Clock::getTm(){
     tm.tm_min = bcd2bin(readI2C0(RTC_ADDRESS, 0x04));
     tm.tm_hour = bcd2bin(readI2C0(RTC_ADDRESS, 0x05));
     tm.tm_mday = bcd2bin(readI2C0(RTC_ADDRESS, 0x06));
-    tm.tm_mon = bcd2bin(readI2C0(RTC_ADDRESS, 0x08));
-    tm.tm_year = bcd2bin(readI2C0(RTC_ADDRESS, 0x09)) + 2000;
+    // months range to 0 - 11
+    tm.tm_mon = bcd2bin(readI2C0(RTC_ADDRESS, 0x08)) - 1;
+    // tm has years from 1990
+    tm.tm_year = bcd2bin(readI2C0(RTC_ADDRESS, 0x09)) + 100;
     return tm;
 }
 
 bool Clock::isSunset(){
+  PRINT("Is sunset? Minute of day values: ");
+  PRINT2("Now: ", minuteOfDay(getTm()) );
+  PRINT2("Sunset: ", minuteOfDay(sunset));
   return minuteOfDay(getTm()) > minuteOfDay(sunset);
 }
 bool Clock::isSunrise(){
-  return minuteOfDay(getTm()) > minuteOfDay(sunset);
+  PRINT("Is sunrise? Minute of day values: ");
+  PRINT2("Now: ", minuteOfDay(getTm()) );
+  PRINT2("Sunrise: ", minuteOfDay(sunrise));
+  return minuteOfDay(getTm()) > minuteOfDay(sunrise);
 }
 bool Clock::isEdittingEnd(){
-  return true;
-  return getTime() >= edittingEnd;
+  PRINT("Is edittingEnd? ");
+  time_t t= getTime();
+  PRINT2("Now: ",  ctime(&t));
+  PRINT2("edittingEnd: ", ctime(&edittingEnd));
+  return t >= edittingEnd;
 }
 void Clock::updateEdittingEnd(){
   edittingEnd = getTime() + EDITTING_DELAY;

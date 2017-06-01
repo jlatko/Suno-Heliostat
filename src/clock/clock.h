@@ -15,20 +15,11 @@ int minuteOfDay(const tm dt);
 class Clock
 {
 private:
-  // temporary timer mock
-  volatile unsigned int counter = 0;
-
   tm sunset;
   tm sunrise;
   time_t edittingEnd;
 public:
   void init();
-  //tmp
-  void mockClock(){
-    counter++;
-    PRINT(counter);
-  };
-
   time_t getTime();
   tm getTm();
 
