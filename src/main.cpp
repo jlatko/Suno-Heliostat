@@ -5,7 +5,6 @@
 #include <Energia.h>
 #include <leds/leds.h>
 #include <print.h>
-// #define PRINT(x) Serial.println(x); delay(20)
 
 #define SPA_LON  -8.6166667
 #define SPA_LAT  41.15
@@ -17,14 +16,19 @@
 
 #define BUTTON_UP 11
 #define BUTTON_DOWN 31
-#define BUTTON_LEFT 32
-#define BUTTON_RIGHT 12
+#define BUTTON_LEFT 12
+#define BUTTON_RIGHT 32
+
+
+#define SLEEP_TIME 500
 
 using namespace std;
 
 spa_data spa;
 Mirror mirror;
 Clock clk;
+// set to max to trigger first loop immediatelly
+volatile uint16_t timer = 0xFFFF;
 
 void setup();
 void loop();
@@ -56,32 +60,34 @@ void setup()
 
 void loop()
 {
-  switch(mirror.getMode()){
-    // END_OF_RANGE has longer polling than DAY, but still checks the repositioning in case the user changes the offset
-    case Mirror::DAY:
-    case Mirror::END_OF_RANGE:
-      if( clk.isSunset() ){
-        endOfDay(mirror, clk, &spa);
-      } else {
-        reposition(mirror, clk, &spa);
-      }
-      break;
-    case Mirror::NIGHT:
-      if( clk.isSunrise() ){
-        beginningOfDay(mirror);
-      }
-      break;
-    case Mirror::EDIT:
-      if( clk.isEdittingEnd() ){
-        mirror.saveOffsets();
-        PRINT("editting end");
-        reposition(mirror, clk, &spa);
-      }
-      break;
+  if(timer/2 >= mirror.getDelay()){
+    timer = 0;
+    switch(mirror.getMode()){
+      // END_OF_RANGE has longer polling than DAY, but still checks the repositioning
+      case Mirror::DAY:
+      case Mirror::END_OF_RANGE:
+        if( clk.isSunset() ){
+          endOfDay(mirror, clk, &spa);
+        } else {
+          reposition(mirror, clk, &spa);
+        }
+        break;
+      case Mirror::NIGHT:
+        if( clk.isSunrise() ){
+          beginningOfDay(mirror);
+        }
+        break;
+      case Mirror::EDIT:
+        if( clk.isEdittingEnd() ){
+          mirror.saveOffsets();
+          PRINT("editting end");
+          reposition(mirror, clk, &spa);
+        }
+        break;
+    }
   }
-
-  sleep(mirror.getDelay());
-  PRINT("loop delay...");
+  timer++;
+  sleep(SLEEP_TIME);
 }
 
 void initSPA(){
@@ -94,7 +100,7 @@ void initSPA(){
   spa.function      = SPA_FUNC;
 }
 
-// Editting works only during the day
+// Editting works only during the day and is disabled during the night or while the mirror is moving
 void setLeft() {
   PRINT("left");
   if( mirror.getMode() != Mirror::MOVING && mirror.getMode() != Mirror::NIGHT ){
@@ -132,7 +138,7 @@ void setDown() {
   blink(GREEN);
 }
 
-//Interrupts for end of range, has to reset the count,
+//Interrupts for end of range
 void endOfRangeLeft(){
   mirror.touchLeft();
   blink(RED);
@@ -165,12 +171,6 @@ void initButtons(){
 }
 
 void initEndOfRangeSensors(){
-  // pinMode(LEFT_END_PIN, INPUT);
-  // pinMode(RIGHT_END_PIN, INPUT);
-  // pinMode(BOTTOM_END_PIN, INPUT);
-  // pinMode(TOP_END_PIN, INPUT);
-
-// for testing with internal pullups
   pinMode(LEFT_END_PIN, INPUT_PULLUP);
   pinMode(RIGHT_END_PIN, INPUT_PULLUP);
   pinMode(BOTTOM_END_PIN, INPUT_PULLUP);

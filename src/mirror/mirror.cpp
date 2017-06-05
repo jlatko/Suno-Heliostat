@@ -25,13 +25,11 @@ const unsigned int Mirror::stepNumberToPinV[]= {
 
 // INIT: sets the motor control pins to output
 void Mirror::init(){
-  // pinMode(ENABLE_H_PIN, OUTPUT);
   pinMode(COIL_1_A_H_PIN, OUTPUT);
   pinMode(COIL_1_B_H_PIN, OUTPUT);
   pinMode(COIL_2_A_H_PIN, OUTPUT);
   pinMode(COIL_2_B_H_PIN, OUTPUT);
 
-  // pinMode(ENABLE_V_PIN, OUTPUT);
   pinMode(COIL_1_A_V_PIN, OUTPUT);
   pinMode(COIL_1_B_V_PIN, OUTPUT);
   pinMode(COIL_2_A_V_PIN, OUTPUT);
@@ -107,16 +105,15 @@ int Mirror::angleToStepsV(float angle){
 }
 
 void Mirror::calculateBasic(spa_data *spa){
-  basicAngleH = spa->azimuth_astro/2;
-  basicAngleV = spa->incidence/2;
-  PRINT2("Basic H: ",basicAngleH);
-  PRINT2("Basic V: ",basicAngleV);
+  basicAngleH = (spa->azimuth - 180)/2;
+  basicAngleV = (90 - spa->incidence)/2;
+  // PRINT2("Basic H: ",basicAngleH);
+  // PRINT2("Basic V: ",basicAngleV);
 }
 
 // === Setup: changes the offset after a single click  ===
 // TODO: make sure what should be the max and min offset
 void Mirror::setLeft(){
-  // additional variable just for being super-cautious not to let the offset go out of range
   float tmpOffset = offsetAngleH - SETTUP_STEP_H;
   if( tmpOffset >= -END_OF_RANGE_H_ANGLE ){
     offsetAngleH = tmpOffset;
@@ -198,7 +195,6 @@ void Mirror::makeStepV(){
 
 void Mirror::repositionH(){
   while( true ){
-    // TODO: delete ( || true)
     if(stepsH < desiredH && (digitalRead(RIGHT_END_PIN) == HIGH )){
       stepsH++;
       makeStepH();
@@ -216,7 +212,6 @@ void Mirror::repositionH(){
 
 void Mirror::repositionV(){
   while( true ){
-    // ( || true) - temporary, only to check without the button
     if(stepsV < desiredV && digitalRead(TOP_END_PIN) == HIGH){
       stepsV++;
       makeStepV();
@@ -252,12 +247,12 @@ void Mirror::reposition(){
     desiredV = END_OF_RANGE_BOTTOM;
   }
 
-  PRINT2("stepsH: ", stepsH);
-  PRINT2("stepsV: ", stepsV);
-  PRINT2("desired angle H: ", basicAngleH + offsetAngleH);
-  PRINT2("desired angle V: ", basicAngleV + offsetAngleV);
-  PRINT2("desiredH: ", desiredH);
-  PRINT2("desiredV: ", desiredV);
+  // PRINT2("stepsH: ", stepsH);
+  // PRINT2("stepsV: ", stepsV);
+  // PRINT2("desired angle H: ", basicAngleH + offsetAngleH);
+  // PRINT2("desired angle V: ", basicAngleV + offsetAngleV);
+  // PRINT2("desiredH: ", desiredH);
+  // PRINT2("desiredV: ", desiredV);
 
   repositionH();
   repositionV();

@@ -32,14 +32,14 @@ void recalculateSpa(Clock &clock, spa_data * spa){
   spa->minute = dt.tm_min;
   spa->second = dt.tm_sec;
   spa_calculate(spa);
-  PRINT2("year: ", spa->year);
-  PRINT2("month: ", spa->month);
-  PRINT2("day: ", spa->day);
-  PRINT2("hour: ", spa->hour);
-  PRINT2("minute: ", spa->minute);
-  PRINT2("second: ", spa->second);
-  PRINT2("azimuth: ", spa->azimuth_astro);
-  PRINT2("incidence: ", spa->incidence);
-  PRINT2("sunrise: ", spa->sunrise);
-  PRINT2("sunset: ", spa->sunset);
+  // PRINT2("year: ", spa->year);
+  // PRINT2("month: ", spa->month);
+  // PRINT2("day: ", spa->day);
+  // PRINT2("hour: ", spa->hour);
+  // PRINT2("minute: ", spa->minute);
+  // PRINT2("second: ", spa->second);
+  // PRINT2("azimuth: ", spa->azimuth);
+  // PRINT2("incidence: ", spa->incidence);
+  // PRINT2("sunrise: ", spa->sunrise);
+  // PRINT2("sunset: ", spa->sunset);
 }

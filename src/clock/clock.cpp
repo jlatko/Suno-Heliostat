@@ -4,12 +4,10 @@
 
 #define RTC_ADDRESS 0x68
 
-// static uint8_t bcd2bin (uint8_t val) { return val - 6 * (val >> 4); }
 static uint8_t bcd2bin (uint8_t val) {
   return ((val/0x10*0xA)+(val%0x10));
  }
 
-// static uint8_t bin2bcd (uint8_t val) { return val + 6 * (val / 10); }
 static uint8_t bin2bcd (uint8_t val) {
   return ((val/0xA*0x10)+(val%0xA));
 }

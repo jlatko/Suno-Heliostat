@@ -27,12 +27,12 @@
 #define SETTUP_STEP_H 0.2
 #define SETTUP_STEP_V 0.2
 
-// how long is the delay in main loop
-#define POLLING_DAY 3000
-#define POLLING_END_OF_RANGE 5001
-#define POLLING_MOVING 2002
-#define POLLING_NIGHT 5003
-#define POLLING_EDIT 300
+// how long is the delay in main loop, in seconds
+#define POLLING_DAY 5
+#define POLLING_END_OF_RANGE 10
+#define POLLING_MOVING 2
+#define POLLING_NIGHT 10
+#define POLLING_EDIT 0
 
 // how long the coil is supplied with voltage and how long is the delay after the move
 #define MOTOR_SIGNAL_HIGH_TIME 60
@@ -106,10 +106,6 @@ public:
 
   void init();
 private:
-  // bool touchedLeft = false;
-  // bool touchedRight = false;
-  // bool touchedTop = false;
-  // bool touchedBottom = false;
   volatile Mode mode;
   volatile int stepsV = 0;
   volatile int stepsH = 0;
