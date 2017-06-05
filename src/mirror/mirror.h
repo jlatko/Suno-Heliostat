@@ -7,16 +7,16 @@
 // #define STEPS_PER_DEGREE_V 10
 #define STEPS_PER_DEGREE_H 2
 
-#define END_OF_RANGE_TOP 60
-#define END_OF_RANGE_BOTTOM -60
-#define END_OF_RANGE_H 120
+#define END_OF_RANGE_TOP 20
+#define END_OF_RANGE_BOTTOM -20
+#define END_OF_RANGE_H 20
 
-#define END_OF_RANGE_TOP_ANGLE 30
-#define END_OF_RANGE_BOTTOM_ANGLE -30
-#define END_OF_RANGE_H_ANGLE 60
+#define END_OF_RANGE_TOP_ANGLE 10
+#define END_OF_RANGE_BOTTOM_ANGLE -10
+#define END_OF_RANGE_H_ANGLE 10
 
-#define BEGINING_H (-END_OF_RANGE_H + 1)
-#define BEGINING_V (END_OF_RANGE_BOTTOM + 1)
+#define BEGINING_H (-END_OF_RANGE_H + 2)
+#define BEGINING_V (END_OF_RANGE_BOTTOM + 2)
 
 // end of range sensor pins
 #define LEFT_END_PIN 9
@@ -31,12 +31,12 @@
 #define POLLING_DAY 5
 #define POLLING_END_OF_RANGE 10
 #define POLLING_MOVING 2
-#define POLLING_NIGHT 10
+#define POLLING_NIGHT 4
 #define POLLING_EDIT 0
 
 // how long the coil is supplied with voltage and how long is the delay after the move
 #define MOTOR_SIGNAL_HIGH_TIME 60
-#define MOTOR_SIGNAL_GAP_TIME 40
+#define MOTOR_SIGNAL_GAP_TIME 200
 
 // #define ENABLE_H_PIN 8
 #define COIL_1_A_H_PIN 3

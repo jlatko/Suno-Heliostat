@@ -107,8 +107,8 @@ int Mirror::angleToStepsV(float angle){
 void Mirror::calculateBasic(spa_data *spa){
   basicAngleH = (spa->azimuth - 180)/2;
   basicAngleV = (90 - spa->incidence)/2;
-  // PRINT2("Basic H: ",basicAngleH);
-  // PRINT2("Basic V: ",basicAngleV);
+  PRINT2("Basic H: ",basicAngleH);
+  PRINT2("Basic V: ",basicAngleV);
 }
 
 // === Setup: changes the offset after a single click  ===
@@ -194,6 +194,8 @@ void Mirror::makeStepV(){
 // crucial piece of code - loop for moving the motors
 
 void Mirror::repositionH(){
+  PRINT2("stepsH: ", stepsH);
+  PRINT2("desiredH: ", desiredH);
   while( true ){
     if(stepsH < desiredH && (digitalRead(RIGHT_END_PIN) == HIGH )){
       stepsH++;
@@ -208,9 +210,13 @@ void Mirror::repositionH(){
       break;
     }
   }
+  PRINT("repositioned horizontal");
+  PRINT2("stepsH: ", stepsH);
 }
 
 void Mirror::repositionV(){
+  PRINT2("stepsV: ", stepsV);
+  PRINT2("desiredV: ", desiredV);
   while( true ){
     if(stepsV < desiredV && digitalRead(TOP_END_PIN) == HIGH){
       stepsV++;
@@ -224,6 +230,8 @@ void Mirror::repositionV(){
       break;
     }
   }
+  PRINT("repositioned vertical");
+  PRINT2("stepsV: ", stepsV);
 }
 
 //
@@ -269,7 +277,7 @@ void Mirror::repositionToReset(){
   stepsH = END_OF_RANGE_H;
   stepsV = END_OF_RANGE_TOP;
   desiredH = - END_OF_RANGE_H;
-  desiredV = - END_OF_RANGE_BOTTOM;
+  desiredV = END_OF_RANGE_BOTTOM;
   repositionH();
   repositionV();
   setMode(Mirror::DAY);

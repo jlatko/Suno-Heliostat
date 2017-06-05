@@ -40,12 +40,14 @@ tm Clock::getTm(){
 }
 
 bool Clock::isSunset(){
+  return true;
   PRINT("Is sunset? Minute of day values: ");
   PRINT2("Now: ", minuteOfDay(getTm()) );
   PRINT2("Sunset: ", minuteOfDay(sunset));
   return minuteOfDay(getTm()) > minuteOfDay(sunset);
 }
 bool Clock::isSunrise(){
+  return true;
   PRINT("Is sunrise? Minute of day values: ");
   PRINT2("Now: ", minuteOfDay(getTm()) );
   PRINT2("Sunrise: ", minuteOfDay(sunrise));
@@ -67,4 +69,11 @@ void Clock::calculateSunsetSunrise(spa_data *spa){
   sunset.tm_min = ((int)(spa->sunset*60))%60;
   sunrise.tm_hour = spa->sunrise;
   sunrise.tm_min = ((int)(spa->sunrise*60))%60;
+  PRINT("Sunset:");
+  PRINT2("h : ", sunset.tm_hour);
+  PRINT2("min : ", sunset.tm_min);
+  PRINT("Sunrise:");
+  PRINT2("h : ", sunrise.tm_hour);
+  PRINT2("min : ", sunrise.tm_min);
+
 }
