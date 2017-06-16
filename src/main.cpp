@@ -19,8 +19,9 @@
 #define BUTTON_LEFT 12
 #define BUTTON_RIGHT 32
 
-
 #define SLEEP_TIME 500
+#define TICKS_PER_SECOND (1000/SLEEP_TIME)
+
 
 using namespace std;
 
@@ -60,7 +61,7 @@ void setup()
 
 void loop()
 {
-  if(timer/2 >= mirror.getDelay()){
+  if(timer/TICKS_PER_SECOND >= mirror.getDelay()){
     timer = 0;
     switch(mirror.getMode()){
       // END_OF_RANGE has longer polling than DAY, but still checks the repositioning

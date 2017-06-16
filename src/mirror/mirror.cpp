@@ -2,6 +2,11 @@
 #include "leds/leds.h"
 #include "memory/memory.h"
 #include <Energia.h>
+#define A5 double(-3.962e-08)
+#define A4 double(3.242e-06)
+#define A3 double(-2.728e-05)
+#define A2 double(-0.00314)
+#define A1 double(1.387)
 
 const unsigned int Mirror::delayTimes[]= {
   POLLING_DAY,
@@ -10,17 +15,17 @@ const unsigned int Mirror::delayTimes[]= {
   POLLING_NIGHT,
   POLLING_EDIT
 };
-const unsigned int Mirror::stepNumberToPinH[]= {
-  COIL_1_A_H_PIN,
-  COIL_2_A_H_PIN,
-  COIL_1_B_H_PIN,
-  COIL_2_B_H_PIN
+const unsigned int Mirror::stepNumberToPinH[][2]= {
+  {COIL_1_A_H_PIN, COIL_2_A_H_PIN},
+  {COIL_1_B_H_PIN, COIL_2_A_H_PIN},
+  {COIL_1_B_H_PIN, COIL_2_B_H_PIN},
+  {COIL_1_A_H_PIN, COIL_2_B_H_PIN}
 };
-const unsigned int Mirror::stepNumberToPinV[]= {
-  COIL_1_A_V_PIN,
-  COIL_2_A_V_PIN,
-  COIL_1_B_V_PIN,
-  COIL_2_B_V_PIN
+const unsigned int Mirror::stepNumberToPinV[][2]= {
+  {COIL_1_A_V_PIN, COIL_2_A_V_PIN},
+  {COIL_1_B_V_PIN, COIL_2_A_V_PIN},
+  {COIL_1_B_V_PIN, COIL_2_B_V_PIN},
+  {COIL_1_A_V_PIN, COIL_2_B_V_PIN}
 };
 
 // INIT: sets the motor control pins to output
@@ -100,8 +105,12 @@ int Mirror::angleToStepsH(float angle){
 }
 
 int Mirror::angleToStepsV(float angle){
-  // TODO do the calibration (interpolation or approximation)
-  return (int)(angle * STEPS_PER_DEGREE_H);
+
+  return (int)((A5*angle*angle*angle*angle*angle
+             + A4*angle*angle*angle*angle
+             + A3*angle*angle*angle
+             + A2*angle*angle
+             + A1*angle) * STEPS_PER_TURN);
 }
 
 void Mirror::calculateBasic(spa_data *spa){
@@ -172,21 +181,37 @@ void Mirror::touchBottom(){
 
 // MOVING
 
+void Mirror::allLowH(){
+  digitalWrite(COIL_1_A_H_PIN, LOW);
+  digitalWrite(COIL_1_B_H_PIN, LOW);
+  digitalWrite(COIL_2_A_H_PIN, LOW);
+  digitalWrite(COIL_2_B_H_PIN, LOW);
+}
+
+void Mirror::allLowV(){
+  digitalWrite(COIL_1_A_V_PIN, LOW);
+  digitalWrite(COIL_1_B_V_PIN, LOW);
+  digitalWrite(COIL_2_A_V_PIN, LOW);
+  digitalWrite(COIL_2_B_V_PIN, LOW);
+}
+
 // sets one of the motor coil wires to high for a moment
 void Mirror::makeStepH(){
   int step = ((stepsH % 4) + 4) % 4;
-  digitalWrite(stepNumberToPinH[step], HIGH);
+  digitalWrite(stepNumberToPinH[step][0], HIGH);
+  digitalWrite(stepNumberToPinH[step][1], HIGH);
   delay(MOTOR_SIGNAL_HIGH_TIME);
-  digitalWrite(stepNumberToPinH[step], LOW);
-  delay(MOTOR_SIGNAL_GAP_TIME);
+  allLowH();
+  delay(MOTOR_SIGNAL_GAP_TIME_H);
   blink(YELLOW);
 }
 
 void Mirror::makeStepV(){
   int step = ((stepsV % 4) + 4) % 4;
-  digitalWrite(stepNumberToPinV[step], HIGH);
+  digitalWrite(stepNumberToPinV[step][0], HIGH);
+  digitalWrite(stepNumberToPinV[step][1], HIGH);
   delay(MOTOR_SIGNAL_HIGH_TIME);
-  digitalWrite(stepNumberToPinV[step], LOW);
+  allLowV();
   delay(MOTOR_SIGNAL_GAP_TIME);
   blink(PINK);
 }

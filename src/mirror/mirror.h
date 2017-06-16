@@ -4,19 +4,19 @@
 #ifndef MIRROR_H
 #define MIRROR_H
 
-// #define STEPS_PER_DEGREE_V 10
-#define STEPS_PER_DEGREE_H 2
+#define STEPS_PER_DEGREE_H 22
+#define STEPS_PER_TURN 200
 
-#define END_OF_RANGE_TOP 20
-#define END_OF_RANGE_BOTTOM -20
-#define END_OF_RANGE_H 20
+#define END_OF_RANGE_TOP 16264
+#define END_OF_RANGE_BOTTOM -8024
+#define END_OF_RANGE_H 40*22
 
-#define END_OF_RANGE_TOP_ANGLE 10
-#define END_OF_RANGE_BOTTOM_ANGLE -10
-#define END_OF_RANGE_H_ANGLE 10
+#define END_OF_RANGE_TOP_ANGLE 60
+#define END_OF_RANGE_BOTTOM_ANGLE -30
+#define END_OF_RANGE_H_ANGLE 40
 
-#define BEGINING_H (-END_OF_RANGE_H + 2)
-#define BEGINING_V (END_OF_RANGE_BOTTOM + 2)
+#define BEGINING_H (-END_OF_RANGE_H + 25)
+#define BEGINING_V (END_OF_RANGE_BOTTOM + 30)
 
 // end of range sensor pins
 #define LEFT_END_PIN 9
@@ -24,19 +24,22 @@
 #define BOTTOM_END_PIN 8
 #define TOP_END_PIN 28
 
-#define SETTUP_STEP_H 0.2
-#define SETTUP_STEP_V 0.2
+#define SETTUP_STEP_H 0.5
+#define SETTUP_STEP_V 0.5
 
 // how long is the delay in main loop, in seconds
-#define POLLING_DAY 5
-#define POLLING_END_OF_RANGE 10
+#define POLLING_DAY 60
+#define POLLING_END_OF_RANGE 120
 #define POLLING_MOVING 2
-#define POLLING_NIGHT 4
+#define POLLING_NIGHT 240
 #define POLLING_EDIT 0
 
 // how long the coil is supplied with voltage and how long is the delay after the move
-#define MOTOR_SIGNAL_HIGH_TIME 60
-#define MOTOR_SIGNAL_GAP_TIME 200
+#define MOTOR_SIGNAL_HIGH_TIME 8
+#define MOTOR_SIGNAL_GAP_TIME 4
+#define MOTOR_SIGNAL_GAP_TIME_H 20
+
+
 
 // #define ENABLE_H_PIN 8
 #define COIL_1_A_H_PIN 3
@@ -88,6 +91,8 @@ public:
   void setUp();
   void setDown();
 
+  void allLowH();
+  void allLowV();
   void makeStepH();
   void makeStepV();
 
@@ -116,8 +121,8 @@ private:
   volatile int desiredV = 0;
   volatile int desiredH = 0;
   static const unsigned int delayTimes[5];
-  static const unsigned int stepNumberToPinH[4];
-  static const unsigned int stepNumberToPinV[4];
+  static const unsigned int stepNumberToPinH[4][2];
+  static const unsigned int stepNumberToPinV[4][2];
 };
 
 
