@@ -10,6 +10,8 @@
 #define WHITE RED|GREEN|BLUE
 
 void initLeds();
+
+// blinks the rgb led
 void blink(int color);
 
 void ledsOff();

@@ -4,6 +4,7 @@
 
 #define RTC_ADDRESS 0x68
 
+// helper functions for binary coded decimal conversion
 static uint8_t bcd2bin (uint8_t val) {
   return ((val/0x10*0xA)+(val%0x10));
  }
@@ -12,6 +13,7 @@ static uint8_t bin2bcd (uint8_t val) {
   return ((val/0xA*0x10)+(val%0xA));
 }
 
+// helper function converting the time to the number of minutes since midnight
 int minuteOfDay(const tm dt){
     return dt.tm_hour*60 + dt.tm_hour;
 }
@@ -21,11 +23,13 @@ void Clock::init(){
   initI2C0();
 }
 
+// gets current time from the RTC in the form of time_t object
 time_t Clock::getTime(){
   tm tm = getTm();
   return mktime(&tm);
 }
 
+// gets current time from the RTC in the form of tm structure
 tm Clock::getTm(){
     tm tm;
     tm.tm_sec = bcd2bin(readI2C0(RTC_ADDRESS, 0x03) & 0x7F);
@@ -39,6 +43,7 @@ tm Clock::getTm(){
     return tm;
 }
 
+// returns true if after sunset
 bool Clock::isSunset(){
   return true;
   PRINT("Is sunset? Minute of day values: ");
@@ -46,6 +51,8 @@ bool Clock::isSunset(){
   PRINT2("Sunset: ", minuteOfDay(sunset));
   return minuteOfDay(getTm()) > minuteOfDay(sunset);
 }
+
+// returns true if after sunrise
 bool Clock::isSunrise(){
   return true;
   PRINT("Is sunrise? Minute of day values: ");
@@ -53,6 +60,8 @@ bool Clock::isSunrise(){
   PRINT2("Sunrise: ", minuteOfDay(sunrise));
   return minuteOfDay(getTm()) > minuteOfDay(sunrise);
 }
+
+// returns true if EDITTING_DELAY has passed since the last button press
 bool Clock::isEdittingEnd(){
   PRINT("Is edittingEnd? ");
   time_t t= getTime();
@@ -60,10 +69,13 @@ bool Clock::isEdittingEnd(){
   PRINT2("edittingEnd: ", ctime(&edittingEnd));
   return t >= edittingEnd;
 }
+
+// adds delay to the editting end time
 void Clock::updateEdittingEnd(){
   edittingEnd = getTime() + EDITTING_DELAY;
 }
 
+// updates the sunset and sunrise times
 void Clock::calculateSunsetSunrise(spa_data *spa){
   sunset.tm_hour = spa->sunset;
   sunset.tm_min = ((int)(spa->sunset*60))%60;

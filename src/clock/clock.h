@@ -25,7 +25,7 @@ public:
 
   bool isSunset();
   bool isSunrise();
-  bool isEdittingEnd();
+  bool isEdittingEnd();  
   void updateEdittingEnd();
   void calculateSunsetSunrise(spa_data *spa);
 };

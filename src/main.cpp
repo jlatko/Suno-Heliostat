@@ -25,9 +25,12 @@
 
 using namespace std;
 
+// variables for the sun position algorithm, mirror state and clock
 spa_data spa;
 Mirror mirror;
 Clock clk;
+
+// timer used for polling in main loop
 // set to max to trigger first loop immediatelly
 volatile uint16_t timer = 0xFFFF;
 
@@ -39,6 +42,7 @@ void initButtons();
 void initEndOfRangeSensors();
 void reset();
 
+// all components and variables are initialised
 void setup()
 {
     INIT_SERIAL();
@@ -50,6 +54,7 @@ void setup()
     clk.init();
     mirror.init();
 
+    // set reset to the PUSH2 button on the tiva c board 
     pinMode(PUSH2, INPUT_PULLUP);
     attachInterrupt(PUSH2, reset, FALLING);
 
@@ -59,27 +64,34 @@ void setup()
     PRINT("Hello");
 }
 
+
 void loop()
 {
+  // polling time depends on the mode
   if(timer/TICKS_PER_SECOND >= mirror.getDelay()){
     timer = 0;
+    // chooses the right action depending on the mode and time
     switch(mirror.getMode()){
       // END_OF_RANGE has longer polling than DAY, but still checks the repositioning
       case Mirror::DAY:
       case Mirror::END_OF_RANGE:
         if( clk.isSunset() ){
+          // if it is after sunset the mirror will move to the begining of range, recalculate sunset and sunrise values and stop repositioning untill the sunrise (mode set to NIGHT)
           endOfDay(mirror, clk, &spa);
         } else {
+          // else if the sun is still shining the mirror will reposition itself
           reposition(mirror, clk, &spa);
         }
         break;
       case Mirror::NIGHT:
         if( clk.isSunrise() ){
+          // if it is after sunrise the mirror will move to touch the end of range sensors and start repositioning (mode set to DAY)
           beginningOfDay(mirror);
         }
         break;
       case Mirror::EDIT:
         if( clk.isEdittingEnd() ){
+          // if a certain amount of time passed from the last button press, the offset values will be saved to the memory and the mirror will reposition itself
           mirror.saveOffsets();
           PRINT("editting end");
           reposition(mirror, clk, &spa);
@@ -101,6 +113,7 @@ void initSPA(){
   spa.function      = SPA_FUNC;
 }
 
+// Button Interrupts
 // Editting works only during the day and is disabled during the night or while the mirror is moving
 void setLeft() {
   PRINT("left");
@@ -183,6 +196,7 @@ void initEndOfRangeSensors(){
   attachInterrupt(TOP_END_PIN, endOfRangeTop , FALLING);
 }
 
+// reset button interrupt
 void reset(){
   PRINT("reset");
   blink(WHITE);

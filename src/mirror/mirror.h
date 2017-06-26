@@ -1,3 +1,6 @@
+// Notice: all the variables, functions etc finished with V refer to the vertical movement of the mirror
+// and those finished with H refer to the horizontal movement
+
 #include <spa.h>
 #include <Energia.h>
 #include "print.h"
@@ -7,6 +10,7 @@
 #define STEPS_PER_DEGREE_H 22
 #define STEPS_PER_TURN 200
 
+// steper motor counters of end of range positions
 #define END_OF_RANGE_TOP 16264
 #define END_OF_RANGE_BOTTOM -8024
 #define END_OF_RANGE_H 40*22
@@ -15,6 +19,7 @@
 #define END_OF_RANGE_BOTTOM_ANGLE -30
 #define END_OF_RANGE_H_ANGLE 40
 
+// begining of day stepper motor counters
 #define BEGINING_H (-END_OF_RANGE_H + 25)
 #define BEGINING_V (END_OF_RANGE_BOTTOM + 30)
 
@@ -24,6 +29,7 @@
 #define BOTTOM_END_PIN 8
 #define TOP_END_PIN 28
 
+// defines how much the offset angles change on button press
 #define SETTUP_STEP_H 0.5
 #define SETTUP_STEP_V 0.5
 
@@ -39,8 +45,6 @@
 #define MOTOR_SIGNAL_GAP_TIME 4
 #define MOTOR_SIGNAL_GAP_TIME_H 20
 
-
-
 // #define ENABLE_H_PIN 8
 #define COIL_1_A_H_PIN 3
 #define COIL_1_B_H_PIN 4
@@ -53,6 +57,7 @@
 #define COIL_2_A_V_PIN 34
 #define COIL_2_B_V_PIN 33
 
+// EEPROM memory addresses
 #define STEPS_H_ADDRESS 0x00000200
 #define STEPS_V_ADDRESS 0x00000204
 #define OFFSET_H_ADDRESS 0x00000208

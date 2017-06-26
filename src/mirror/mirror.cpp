@@ -2,12 +2,15 @@
 #include "leds/leds.h"
 #include "memory/memory.h"
 #include <Energia.h>
+
+// vertical movement angle to steps polynomial coefficients
 #define A5 double(-3.962e-08)
 #define A4 double(3.242e-06)
 #define A3 double(-2.728e-05)
 #define A2 double(-0.00314)
 #define A1 double(1.387)
 
+// delay times for each mirror mode
 const unsigned int Mirror::delayTimes[]= {
   POLLING_DAY,
   POLLING_END_OF_RANGE,
@@ -15,6 +18,8 @@ const unsigned int Mirror::delayTimes[]= {
   POLLING_NIGHT,
   POLLING_EDIT
 };
+
+// 4 phases of the stepper motors
 const unsigned int Mirror::stepNumberToPinH[][2]= {
   {COIL_1_A_H_PIN, COIL_2_A_H_PIN},
   {COIL_1_B_H_PIN, COIL_2_A_H_PIN},
@@ -60,6 +65,8 @@ void Mirror::init(){
   }else{
     stepsV = (int)read(STEPS_V_ADDRESS);
   }
+
+  // read offsets from the memory
   uint32_t offsetBytesH,offsetBytesV;
   offsetBytesH = read(OFFSET_H_ADDRESS);
   offsetBytesV = read(OFFSET_V_ADDRESS);
@@ -89,6 +96,7 @@ void Mirror::saveStepsV(){
   write(STEPS_V_ADDRESS, stepsV);
 }
 
+// resets counters and offsets to 0 and writes to the memory
 void Mirror::reset(){
   write(STEPS_V_ADDRESS, 0);
   write(STEPS_H_ADDRESS, 0);
@@ -100,12 +108,13 @@ void Mirror::reset(){
   offsetAngleV = 0;
 }
 
+
+// Angle to number of steps mappings
 int Mirror::angleToStepsH(float angle){
   return (int)(angle * STEPS_PER_DEGREE_H);
 }
 
 int Mirror::angleToStepsV(float angle){
-
   return (int)((A5*angle*angle*angle*angle*angle
              + A4*angle*angle*angle*angle
              + A3*angle*angle*angle
@@ -113,6 +122,7 @@ int Mirror::angleToStepsV(float angle){
              + A1*angle) * STEPS_PER_TURN);
 }
 
+// calculates basic mirrors angles having actual sun position data
 void Mirror::calculateBasic(spa_data *spa){
   basicAngleH = (spa->azimuth - 180)/2;
   basicAngleV = (90 - spa->incidence)/2;
@@ -121,7 +131,6 @@ void Mirror::calculateBasic(spa_data *spa){
 }
 
 // === Setup: changes the offset after a single click  ===
-// TODO: make sure what should be the max and min offset
 void Mirror::setLeft(){
   float tmpOffset = offsetAngleH - SETTUP_STEP_H;
   if( tmpOffset >= -END_OF_RANGE_H_ANGLE ){
@@ -180,7 +189,7 @@ void Mirror::touchBottom(){
 }
 
 // MOVING
-
+// sets all the motor pins to low
 void Mirror::allLowH(){
   digitalWrite(COIL_1_A_H_PIN, LOW);
   digitalWrite(COIL_1_B_H_PIN, LOW);
@@ -195,7 +204,7 @@ void Mirror::allLowV(){
   digitalWrite(COIL_2_B_V_PIN, LOW);
 }
 
-// sets one of the motor coil wires to high for a moment
+// sets appropriate polarisation of the motor (depending on the step counter)
 void Mirror::makeStepH(){
   int step = ((stepsH % 4) + 4) % 4;
   digitalWrite(stepNumberToPinH[step][0], HIGH);
@@ -217,7 +226,6 @@ void Mirror::makeStepV(){
 }
 
 // crucial piece of code - loop for moving the motors
-
 void Mirror::repositionH(){
   PRINT2("stepsH: ", stepsH);
   PRINT2("desiredH: ", desiredH);
@@ -262,6 +270,8 @@ void Mirror::repositionV(){
 //
 // repositioning
 //
+
+// calculates the desired values of the step counters and moves the mirror
 void Mirror::reposition(){
   setMode(Mirror::MOVING);
   PRINT("Moving...");
@@ -296,6 +306,7 @@ void Mirror::reposition(){
   }
 }
 
+// sets the mirror to left- and downwards for the number of steps equal the whole movement range in order to trigger end of range sensors and reset the counter values
 void Mirror::repositionToReset(){
   setMode(Mirror::MOVING);
   PRINT("To reset...");
@@ -308,6 +319,7 @@ void Mirror::repositionToReset(){
   setMode(Mirror::DAY);
 }
 
+// moves the mirror to the begining of the range (leftwards and downwards to almost touch the end of range sensors)
 void Mirror::toBeginning(){
   setMode(Mirror::MOVING);
   PRINT("To begining...");
