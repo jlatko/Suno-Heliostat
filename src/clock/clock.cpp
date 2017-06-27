@@ -45,7 +45,6 @@ tm Clock::getTm(){
 
 // returns true if after sunset
 bool Clock::isSunset(){
-  return true;
   PRINT("Is sunset? Minute of day values: ");
   PRINT2("Now: ", minuteOfDay(getTm()) );
   PRINT2("Sunset: ", minuteOfDay(sunset));
@@ -54,7 +53,6 @@ bool Clock::isSunset(){
 
 // returns true if after sunrise
 bool Clock::isSunrise(){
-  return true;
   PRINT("Is sunrise? Minute of day values: ");
   PRINT2("Now: ", minuteOfDay(getTm()) );
   PRINT2("Sunrise: ", minuteOfDay(sunrise));

@@ -54,7 +54,7 @@ void setup()
     clk.init();
     mirror.init();
 
-    // set reset to the PUSH2 button on the tiva c board 
+    // set reset to the PUSH2 button on the tiva c board
     pinMode(PUSH2, INPUT_PULLUP);
     attachInterrupt(PUSH2, reset, FALLING);
 
